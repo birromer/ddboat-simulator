@@ -150,7 +150,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/ddboat-sim_node.cpp)
 add_executable(robot src/robot.cpp)
-#add_executable(command src/command.cpp)
+add_executable(controller src/controller.cpp)
 #add_executable(target src/target.cpp)
 
 ## Rename C++ executable without prefix
@@ -172,9 +172,9 @@ target_link_libraries(robot
   ${catkin_LIBRARIES}
 )
 
-#target_link_libraries(command
-#  ${catkin_LIBRARIES}
-#)
+target_link_libraries(controller
+  ${catkin_LIBRARIES}
+)
 
 #target_link_libraries(target
 #  ${catkin_LIBRARIES}

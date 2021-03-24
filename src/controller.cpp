@@ -22,8 +22,7 @@ double target_x, target_y;  // position of the local objective
 void robot_Callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
   robot_x = msg->pose.position.x;
   robot_y = msg->pose.position.y;
-  robot.pose.orientation = msg->pose.orientation;
-  robot_th = tf::getYaw(robot.pose.orientation);
+  robot_th = tf::getYaw(msg->pose.orientation);
   robot_sp = 1.0;
 
   ROS_INFO("Received robot's state at position: [%f] [%f] [%f], with speed [%f]", robot_x, robot_y, robot_th, robot_sp);
@@ -84,9 +83,9 @@ int main(int argc, char **argv) {
     ROS_INFO("Current distance between robot and target: [%f]", e_dist);
 
     if (e_angle > M_PI/4) {
-      u = 0-10;  // turn right
+      u1 = 0-10;  // turn right
     } else {
-      u = 0.1*(e_angle+M_PI);
+      u1 = 0.1*(e_angle+M_PI);
     }
 
     msg_z_u1.data = u1;
