@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
   std::string ns_boat = ros::this_node::getNamespace().substr(1,5);
 
-  tf2_ros::Buffer tfBuffer; //pour controle
+  tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformListener tfListener(tfBuffer);
 
   while (ros::ok()) {
@@ -68,25 +68,28 @@ int main(int argc, char **argv) {
     y_t = target_y;
 
     // ====================== PD control ======================
-    //TODO: change that control for something that works
+    //TODO: change that control for something that works on two propulsors
 
-    angle_boat_trgt = atan2(x2-y_t, x1-x_t);
-    // error is the angle between the mais axis of the boat and the target
-    e_angle = angle_boat_trgt - x3;
-    ROS_INFO("Current angle error: [%f]", e_angle);
+//    angle_boat_trgt = atan2(x2-y_t, x1-x_t);
+//    // error is the angle between the mais axis of the boat and the target
+//    e_angle = angle_boat_trgt - x3;
+//    ROS_INFO("Current angle error: [%f]", e_angle);
+//
+//    // deal with the discontinuity problem with sawtooth
+//    e_angle = 2*atan(tan(e_angle/2));
+//
+//    // distance to the target, desired is 5m
+//    e_dist = sqrt(pow(x1 - x_t, 2) + pow(x2 - y_t, 2));
+//    ROS_INFO("Current distance between robot and target: [%f]", e_dist);
+//
+//    if (e_angle > M_PI/4) {
+//      u1 = 0-10;  // turn right
+//    } else {
+//      u1 = 0.1*(e_angle+M_PI);
+//    }
 
-    // deal with the discontinuity problem with sawtooth
-    e_angle = 2*atan(tan(e_angle/2));
-
-    // distance to the target, desired is 5m
-    e_dist = sqrt(pow(x1 - x_t, 2) + pow(x2 - y_t, 2));
-    ROS_INFO("Current distance between robot and target: [%f]", e_dist);
-
-    if (e_angle > M_PI/4) {
-      u1 = 0-10;  // turn right
-    } else {
-      u1 = 0.1*(e_angle+M_PI);
-    }
+    u1 = 10;
+    u2 = 10;
 
     msg_z_u1.data = u1;
     z_u1_pub.publish(msg_z_u1);
