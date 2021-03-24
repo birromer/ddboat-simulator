@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
   ros::Subscriber robot_sub = n.subscribe("state_boat", 1000, robot_Callback);
   ros::Subscriber target_sub = n.subscribe("/target", 1000, target_Callback);
 
-  double x1, x2, x3, x4, t_x, t_y;
-  double u1, u2, e_angle, angle_boat_trgt, angle_turr_trgt;
+  double x1, x2, x3, x4, x_t, y_t;
+  double u1, u2, e_angle, e_dist, angle_boat_trgt, angle_turr_trgt;
 
   std_msgs::Float32 msg_z_u1, msg_z_u2;
 
@@ -65,21 +65,22 @@ int main(int argc, char **argv) {
     x2 = robot_y;
     x3 = robot_th;
     x4 = robot_sp;
-    t_x = target_x;
-    t_y = target_y;
+    x_t = target_x;
+    y_t = target_y;
 
-    // ====================== control boat ======================
+    // ====================== PD control ======================
+    //TODO: change that control for something that works
 
-    angle_boat_trgt = atan2(y_robot - y_target, x_robot - x_target);
+    angle_boat_trgt = atan2(x2-y_t, x1-x_t);
     // error is the angle between the mais axis of the boat and the target
-    e_angle = angle_boat_trgt - yaw_robot;
+    e_angle = angle_boat_trgt - x3;
     ROS_INFO("Current angle error: [%f]", e_angle);
 
     // deal with the discontinuity problem with sawtooth
     e_angle = 2*atan(tan(e_angle/2));
 
     // distance to the target, desired is 5m
-    e_dist = sqrt(pow(x_robot - x_target, 2) + pow(y_robot - y_target, 2));
+    e_dist = sqrt(pow(x1 - x_t, 2) + pow(x2 - y_t, 2));
     ROS_INFO("Current distance between robot and target: [%f]", e_dist);
 
     if (e_angle > M_PI/4) {
@@ -88,9 +89,13 @@ int main(int argc, char **argv) {
       u = 0.1*(e_angle+M_PI);
     }
 
-    msg_z_u1.angular.z = u;
+    msg_z_u1.data = u1;
     z_u1_pub.publish(msg_z_u1);
-    ROS_INFO("Sent z for u1: [%f]", u);
+
+    msg_z_u2.data = u2;
+    z_u2_pub.publish(msg_z_u2);
+
+    ROS_INFO("Sent u1 [%f] and u2 [%f]", u1, u2);
 
     ros::spinOnce();
 
