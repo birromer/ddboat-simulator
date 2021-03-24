@@ -2,18 +2,22 @@ cmake_minimum_required(VERSION 3.0.2)
 project(ddboat-sim)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   geometry_msg
+  message_generation
   message_runtime
   roscpp
   rospy
-  std_msgsmessage_generation
+  std_msgs
+  message_generation
   tf
+  tf2
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -107,8 +111,17 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES ddboat-sim
-#  CATKIN_DEPENDS geometry_msg message_runtime roscpp rospy std_msgsmessage_generation tf
+#  LIBRARIES tp3
+  CATKIN_DEPENDS
+    geometry_msgs
+    message_generation
+    message_runtime
+    roscpp
+    rospy
+    std_msgs
+    tf
+    tf2
+    visualization_msgs
 #  DEPENDS system_lib
 )
 
@@ -137,6 +150,9 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/ddboat-sim_node.cpp)
+add_executable(robot src/robot.cpp)
+#add_executable(command src/command.cpp)
+#add_executable(target src/target.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -152,6 +168,18 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+#
+target_link_libraries(robot
+  ${catkin_LIBRARIES}
+)
+
+#target_link_libraries(command
+#  ${catkin_LIBRARIES}
+#)
+
+#target_link_libraries(target
+#  ${catkin_LIBRARIES}
+#)
 
 #############
 ## Install ##
