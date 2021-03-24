@@ -8,13 +8,12 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msg
+  geometry_msgs
   message_generation
   message_runtime
   roscpp
   rospy
   std_msgs
-  message_generation
   tf
   tf2
   visualization_msgs
