@@ -1,29 +1,27 @@
 #include "ros/ros.h"
-
 #include "std_srvs/Trigger.h"
 #include "std_msgs/Float32.h"
-
-#include <geometry_msgs/TransformStamped.h>
+#include "ddboat_sim/State.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/Quaternion.h"
-
 #include "visualization_msgs/Marker.h"
-
-#include "tf/tf.h"
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/transform_broadcaster.h>
 
 #include <math.h>
 
 double robot_x, robot_y, robot_th, robot_sp; // robot's state (x, y, heading, speed)
 double target_x, target_y;  // position of the local objective
 
-void robot_Callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
-  robot_x = msg->pose.position.x;
-  robot_y = msg->pose.position.y;
-  robot_th = tf::getYaw(msg->pose.orientation);
-  robot_sp = 1.0;
+void robot_Callback(const ddboat_sim::State::ConstPtr& msg) {
+  robot_x = msg->x1;
+  robot_y = msg->x2;
+  robot_th = msg->x3;
+  robot_sp = msg->x4;
+
+//  robot_x = msg->pose.position.x;
+//  robot_y = msg->pose.position.y;
+//  robot_th = tf::getYaw(msg->pose.orientation);
+//  robot_sp = 1.0;
 
   ROS_INFO("Received robot's state at position: [%f] [%f] [%f], with speed [%f]", robot_x, robot_y, robot_th, robot_sp);
 }
@@ -52,11 +50,7 @@ int main(int argc, char **argv) {
   double u1, u2, e_angle, e_dist, angle_boat_trgt, angle_turr_trgt;
 
   std_msgs::Float32 msg_z_u1, msg_z_u2;
-
-  std::string ns_boat = ros::this_node::getNamespace().substr(1,5);
-
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener(tfBuffer);
+  int i = 0;
 
   while (ros::ok()) {
     // copy vars for them not to change inside loop
@@ -88,8 +82,15 @@ int main(int argc, char **argv) {
 //      u1 = 0.1*(e_angle+M_PI);
 //    }
 
-    u1 = 10;
-    u2 = 10;
+    if (i >= 10) {
+      u1 = 0;
+      u2 = 0;
+    } else {
+      u1 = 1;
+      u2 = 1;
+    }
+
+    i++;
 
     msg_z_u1.data = u1;
     z_u1_pub.publish(msg_z_u1);

@@ -12,7 +12,7 @@
 #define P2 1
 #define P3 1
 
-#define DATA_FROM_SIM true
+#define DATA_FROM_SIM false
 
 double cmd_r, cmd_l;
 double lx, ly;               // gps data
@@ -64,8 +64,10 @@ void encoder_Callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
 }
 
 void integration_euler(double &x1, double &x2, double &x3, double &x4, double u1, double u2, double dt) {
+  std::cout << "x1: " << x1 << "| x2: "  << x2 << " | x3: " << x3 << " | x4 " << x4 << std::endl;
   x1 = x1 + dt * (x4*cos(x3));
   x2 = x2 + dt * (x4*sin(x3));
+  std::cout << "x1: " << x1 << "| x2: "  << x2 << " | x3: " << x3 << " | x4 " << x4 << std::endl;
   x3 = x3 + dt * (P1*(u1-u2));
   x4 = x4 + dt * (P2*(u1+u2) + P3*x4*abs(x4));
 }
@@ -102,13 +104,16 @@ int main(int argc, char **argv) {
   ros::Publisher state_pub = n.advertise<ddboat_sim::State>("state_boat", 1000);
 
   while (ros::ok()) {
+    std::cout << "inicio do loop" << std::endl;
     u1 = cmd_r;
     u2 = cmd_l;
 
     if (DATA_FROM_SIM == false) { // evolve model
+      std::cout << "entrei no caso com simulacao" << std::endl;
       integration_euler(x1, x2, x3, x4, u1, u2, dt);
 
     } else { // get simulation data
+      std::cout << "entrei no caso sem simulacao" << std::endl;
 
       double vit = sqrt(pow(x1 - prev_x1, 2) + pow(x2-prev_x2,2));
 
