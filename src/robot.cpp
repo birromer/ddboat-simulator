@@ -3,6 +3,7 @@
 
 #include "geometry_msgs/PoseStamped.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/Float32MultiArray.h"
 #include "ddboat_sim/State.h"
 
 #include <math.h>
@@ -38,7 +39,7 @@ void cmd_l_Callback(const std_msgs::Float32::ConstPtr& msg) {
 ** Un topic pour les encodeur (array de 2 valeurs)
  */
 
-void gps_Callback(const std_msgs::Float32::ConstPtr& msg) {
+void gps_Callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
   ROS_INFO("received gps data: lx [%f], ly [%f]", msg->data[0], msg->data[1]);
   lx = msg->data[0];
   ly = msg->data[1];
@@ -49,14 +50,14 @@ void compass_Callback(const std_msgs::Float32::ConstPtr& msg) {
   compass = msg->data;
 }
 
-void acc_Callback(const std_msgs::Float32::ConstPtr& msg) {
+void acc_Callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
   ROS_INFO("received accelerometer data: x [%f], y [%f], z [%f]", msg->data[0], msg->data[1], msg->data[2]);
   acc_x = msg->data[0];
   acc_y = msg->data[1];
   acc_z = msg->data[2];
 }
 
-void encoder_Callback(const std_msgs::Float32::ConstPtr& msg) {
+void encoder_Callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
   ROS_INFO("received encoder data: left [%f], right [%f]", msg->data[0], msg->data[1]);
   enc_left  = msg->data[0];
   enc_right = msg->data[1];
@@ -129,7 +130,7 @@ int main(int argc, char **argv) {
     state_msg.x3 =  x3;
     state_msg.x4 =  x4;
 
-    state_pub.publish(msg);
+    state_pub.publish(state_msg);
 
     ros::spinOnce();
 
