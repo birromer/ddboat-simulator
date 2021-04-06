@@ -21,7 +21,7 @@ end
 
 
 function getWheelAngularPosition (handle)
-    angles=sim.getObjectOrientation(handle,sim_handle_parent)
+    angles = sim.getObjectOrientation(handle, sim_handle_parent)
     angPos = angles[3]*180.0/math.pi
     angPos = angPos + 180.0
     return angPos
@@ -30,7 +30,7 @@ end
 
 -- Compute increment of odemeter (
 function deltaWheelAngularPosition(curPos,lastPos,wSpeed)
-	-- this function Compute increment of odemeter 
+  -- this function Compute increment of odemeter
     if wSpeed == 0.0 then
         deltaPos = 0.0
     else
@@ -54,79 +54,79 @@ end
 
 function getCompass(objectName,statemotor)
   -- This function get the value of the compass 
-  objectHandle=sim.getObjectHandle(objectName)
+  objectHandle = sim.getObjectHandle(objectName)
   relTo = -1
-  o=sim.getObjectOrientation(objectHandle,relTo)
+  o = sim.getObjectOrientation(objectHandle, relTo)
   if statemotor then -- if motor is ON 
-  	heading = -o[3] + gaussian(0,1)*math.pi  -- we add a gaussian noise
+    heading = -o[3] + gaussian(0,1)*math.pi  -- we add a gaussian noise
   else
-  	heading = -o[3]   -- north along X > 0
+    heading = -o[3]   -- north along X > 0
   end
   return heading*180/math.pi -- in degre
 end
 
 
 function getGPS(objectName)
-	-- This function get the value of the position of the boat 
-	-- and estimate the longitude and the lattitude of the boat
-	-- the reference is the "ponton of Guerledan"
-	longRef = -3.01473333*math.pi/180  -- To complete
-	latRef = 48.19906500*math.pi/180  -- To complete
-	rho =  6370000 -- To complete
-	accurateGPS= 0.00001 -- To complete in degre
-	relTo = -1
-	objectHandle=sim.getObjectHandle(objectName)
-	p=sim.getObjectPosition(objectHandle,relTo)
-	ly = (p[2]/rho) + latRef
-	lx = (p[1]/(rho*math.cos(ly))) + longRef 
-	return {longitude = lx*180/math.pi + accurateGPS * gaussian(0,1), lattitude = ly*180/math.pi+ accurateGPS * gaussian(0,1)}
+  -- This function get the value of the position of the boat
+  -- and estimate the longitude and the lattitude of the boat
+  -- the reference is the "ponton of Guerledan"
+  longRef = -3.01473333*math.pi/180  -- To complete
+  latRef = 48.19906500*math.pi/180  -- To complete
+  rho =  6370000 -- To complete
+  accurateGPS= 0.00001 -- To complete in degre
+  relTo = -1
+  objectHandle = sim.getObjectHandle(objectName)
+  p = sim.getObjectPosition(objectHandle,relTo)
+  ly = (p[2]/rho) + latRef
+  lx = (p[1]/(rho*math.cos(ly))) + longRef
+  return {longitude = lx*180/math.pi + accurateGPS * gaussian(0,1), lattitude = ly*180/math.pi+ accurateGPS * gaussian(0,1)}
 end
 
 
 function getAcceleration()
-	-- This function get the value of acceleration
-	accurateAccelerometer = 0.1 --To complette 
-	tmpData=sim.tubeRead(accelCommunicationTube)
+  -- This function get the value of acceleration
+  accurateAccelerometer = 0.1 --To complette
+  tmpData = sim.tubeRead(accelCommunicationTube)
     if (tmpData) then
-		accel=sim.unpackFloats(tmpData)
+    accel=sim.unpackFloats(tmpData)
     end
     return {accel_x = accel[1] + accurateAccelerometer * gaussian(0,1), accel_y = accel[2] + accurateAccelerometer * gaussian(0,1), accel_z = accel[3] + accurateAccelerometer * gaussian(0,1)}
 end
 
 
 function getGyrometer()
-	-- This function get the value of acceleration
-	accurateGyrometer = 0.01 --To complette 
-    tmpData=sim.tubeRead(gyroCommunicationTube)
+  -- This function get the value of acceleration
+  accurateGyrometer = 0.01 --To complette
+    tmpData = sim.tubeRead(gyroCommunicationTube)
     if (tmpData) then
-		gyro=sim.unpackFloats(tmpData)
+    gyro = sim.unpackFloats(tmpData)
     end
     return {gyro_x = gyro[1] + accurateGyrometer * gaussian(0,1), gyro_y = gyro[2] + accurateGyrometer * gaussian(0,1), , gyro_z = gyro[3] + accurateGyrometer * gaussian(0,1)}
 end
 
 
 function getEncoder()
-	-- This function update encoders with relative orientation of the wheel (wrt joint axis)
+  -- This function update encoders with relative orientation of the wheel (wrt joint axis)
     for ip=1,#propellers do
-	 	handle=sim.getObjectHandle(objectName)
+      handle=sim.getObjectHandle(objectName)
 
-	 	relativeOrientation=getWheelAngularPosition(handle)
-	 	currentOrientationTime=sim.getSimulationTime()
-	 	--print (ip,relativeOrientation,lastRelativeOrientation[ip])
-	 	--print (ip,propellersCnt[ip])
-	 	if ip == 1 then  -- left propeller (count ++)
-	    	propellerSpeed = leftpropellerSpeed
-	    	dCnt = deltaWheelAngularPosition(relativeOrientation,lastRelativeOrientation[ip],propellerSpeed)
-	    	propellersCnt[ip] = propellersCnt[ip] + dCnt
-	 	end
-	 	if ip == 2 then  -- right propeller (count --)
-	    	propellerSpeed = rightWheelSpeed
-	    	dCnt = deltaWheelAngularPosition(relativeOrientation,lastRelativeOrientation[ip],propellerSpeed)
-	    	propellersCnt[ip] = propellersCnt[ip] - dCnt
-	 	end
-	 	--print (ip,propellersCnt[ip])
-	 	lastRelativeOrientation[ip]=relativeOrientation
-	 	lastOrientationTime[ip]=currentOrientationTime   
+      relativeOrientation = getWheelAngularPosition(handle)
+      currentOrientationTime = sim.getSimulationTime()
+      --print (ip,relativeOrientation,lastRelativeOrientation[ip])
+      --print (ip,propellersCnt[ip])
+      if ip == 1 then  -- left propeller (count ++)
+        propellerSpeed = leftpropellerSpeed
+        dCnt = deltaWheelAngularPosition(relativeOrientation,lastRelativeOrientation[ip],propellerSpeed)
+        propellersCnt[ip] = propellersCnt[ip] + dCnt
+      end
+      if ip == 2 then  -- right propeller (count --)
+        propellerSpeed = rightWheelSpeed
+        dCnt = deltaWheelAngularPosition(relativeOrientation,lastRelativeOrientation[ip],propellerSpeed)
+        propellersCnt[ip] = propellersCnt[ip] - dCnt
+      end
+      --print (ip,propellersCnt[ip])
+      lastRelativeOrientation[ip] = relativeOrientation
+      lastOrientationTime[ip] = currentOrientationTime
     end
       return {leftEncoder = propellersCnt[1], rightEncoder = propellersCnt[2]}
 end
@@ -164,7 +164,7 @@ threadFunction=function()
 
       -- Now don't waste time in this loop if the simulation time hasn't changed! This also synchronizes this thread with the main script
       sim.switchThread() -- This thread will resume just before the main script is called again
-		
+
     end
 end
 
