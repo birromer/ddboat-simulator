@@ -28,19 +28,17 @@
 -- end
 
 function subscriber_cmd_ul_callback(msg)
-  spdMotor = msg["data"]
-  sim.setJointTargetVelocity(backMotorLeft, spdMotor)
-  sim.setJointTargetVelocity(frontMotorLeft, spdMotor)
+  spdMotor1 = msg["data"]
+  sim.addForceAndTorque(MotorLeft,{0,spdMotor1,0})
 
-  sim.addStatusbarMessage('cmd_u1 subscriber receiver : wheels speed ='..spdMotor)
+  sim.addStatusbarMessage('cmd_ul subscriber receiver : wheels speed ='..spdMotor1)
 end
 
 function subscriber_cmd_ur_callback(msg)
-  spdMotor = msg["data"]
-  sim.setJointTargetVelocity(backMotorRight, spdMotor)
-  sim.setJointTargetVelocity(frontMotorRight, spdMotor)
+  spdMotor1 = msg["data"]
+  sim.addForceAndTorque(MotorRight,{0,spdMotor1,0})
 
-  sim.addStatusbarMessage('cmd_u1 subscriber receiver : wheels speed ='..spdMotor)
+  sim.addStatusbarMessage('cmd_ur subscriber receiver : wheels speed ='..spdMotor1)
 end
 
 function getPose(objectName)
@@ -77,14 +75,13 @@ end
 
 function sysCall_init()
   -- The child script initialization
-  objectName = "Chassis"
-  objectHandle = sim.getObjectHandle(objectName)
+ -- objectName = "Corps_boat"
+  objectHandle =sim.getObjectAssociatedWithScript(sim.handle_self)
 
   -- get left and right motors handles
-  backMotorLeft = sim.getObjectHandle("Join_Left_Back")
-  backMotorRight = sim.getObjectHandle("Join_Right_Back")
-  frontMotorLeft = sim.getObjectHandle("Join_Left_Front")
-  frontMotorRight = sim.getObjectHandle("Join_Right_Front")
+  MotorLeft = sim.getObjectHandle("motor_left")
+  MotorRight = sim.getObjectHandle("motor_right")
+ 
 
   rosInterfacePresent = simROS
 
@@ -103,7 +100,7 @@ function sysCall_init()
   end
 
   -- Get some handles (as usual !):
-  onboard_camera = sim.getObjectHandle('OnBoardCamera')
+ -- onboard_camera = sim.getObjectHandle('OnBoardCamera')
 
   -- Enable an image publisher and subscriber:
   pub = simROS.advertise('/image', 'sensor_msgs/Image')
@@ -130,7 +127,8 @@ function sysCall_actuation()
    if rosInterfacePresent then
       -- publish time and pose topics
       simROS.publish(publisher1, {data=sim.getSimulationTime()})
-      simROS.publish(publisher2, getPose("Chassis"))
+      objectHandle =sim.getObjectAssociatedWithScript(sim.handle_self)
+      simROS.publish(publisher2, getPose(objectHandle))
 
       -- send a TF
       -- To send several transforms at once, use simROS.sendTransforms instead
