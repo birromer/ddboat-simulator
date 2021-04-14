@@ -95,6 +95,7 @@ function getCompass(objectName,statemotor)
 end
 
 
+
 function getGPS(objectName)
   -- This function get the value of the position of the boat
   -- and estimate the longitude and the lattitude of the boat
@@ -227,8 +228,11 @@ function sysCall_init()
     publisher1 = simROS.advertise('/simulationTime','std_msgs/Float32')
     publisher2 = simROS.advertise('/pose','geometry_msgs/Pose')
 
-    publisher_gyro = simROS.advertise('/gyro','std_msgs/Float32MultiArray')
+--    publisher_gyro = simROS.advertise('/gyro','std_msgs/Float32MultiArray')
     publisher_acc  = simROS.advertise('/acc','std_msgs/Float32MultiArray')
+    publisher_enc  = simROS.advertise('/encoder','std_msgs/Float32MultiArray')
+    publisher_gps  = simROS.advertise('/gps','std_msgs/Float32MultiArray')
+    publisher_comp = simROS.advertise('/compass','std_msgs/Float32')
 
     --subscriber1=simROS.subscribe('/cmd_u1','std_msgs/Float32','subscriber_cmd_u1_callback')
     --subscriber2=simROS.subscribe('/cmd_u2','std_msgs/Float32','subscriber_cmd_u2_callback')
@@ -248,11 +252,13 @@ function sysCall_init()
 
   -- initialization for sensor processing
   -- initialize communication tube with accelerometers and gyroscopes
-  accelCommunicationTube=sim.tubeOpen(0, 'accelerometerData'..sim.GetNameSuffix(nil), 1)
+  accelCommunicationTube = sim.tubeOpen(0, 'accelerometerData'..sim.GetNameSuffix(nil), 1)
   accel={0.0, 0.0, 0.0}
 
-  gyroCommunicationTube=sim.tubeOpen(0, 'gyroData'..sim.GetNameSuffix(nil), 1) -- put this in the initialization phase
+  gyroCommunicationTube = sim.tubeOpen(0, 'gyroData'..sim.GetNameSuffix(nil), 1) -- put this in the initialization phase
   gyro={0.0, 0.0, 0.0}
+
+  h=simGetObjectAssociatedWithScript(sim_handle_self)
 
   lastRelativeOrientation={}
   lastOrientationTime={}
@@ -273,11 +279,20 @@ function sysCall_sensing()
     d['data'] = data
     simROS.publish(pub,d)
 
-    gyro = getGyrometer()
-    simROS.publish(publisher_gyro, gyro)
+--    gyro = getGyrometer()
+--    simROS.publish(publisher_gyro, gyro)
 
     acc = getAcceleration()
     simROS.publish(publisher_acc, acc)
+
+    encoder = getEncoder()
+    simROS.publish(publisher_enc, encoder)
+
+--    gps = getGPS(objectName)
+--    simROS.publish(publisher_gps, gps)
+
+--    compass = getCompass(objectName, statemotor)
+--    simROS.publish(publisher_comp, compass)
 end
  
 
