@@ -130,7 +130,7 @@ function getGyrometer()
     if (tmpData) then
     gyro = sim.unpackFloats(tmpData)
     end
-    return {gyro_x = gyro[1] + accurateGyrometer * gaussian(0,1), gyro_y = gyro[2] + accurateGyrometer * gaussian(0,1), , gyro_z = gyro[3] + accurateGyrometer * gaussian(0,1)}
+    return {gyro_x = gyro[1] + accurateGyrometer * gaussian(0,1), gyro_y = gyro[2] + accurateGyrometer * gaussian(0,1), gyro_z = gyro[3] + accurateGyrometer * gaussian(0,1)}
 end
 
 
@@ -211,14 +211,14 @@ end
 
 function sysCall_init()
   -- The child script initialization
-  objectName = "Chassis"
-  objectHandle = sim.getObjectHandle(objectName)
-
-  -- get left and right motors handles
-  backMotorLeft = sim.getObjectHandle("Join_Left_Back")
-  backMotorRight = sim.getObjectHandle("Join_Right_Back")
-  frontMotorLeft = sim.getObjectHandle("Join_Left_Front")
-  frontMotorRight = sim.getObjectHandle("Join_Right_Front")
+--  objectName = "Chassis"
+--  objectHandle = sim.getObjectHandle(objectName)
+--
+--  -- get left and right motors handles
+--  backMotorLeft = sim.getObjectHandle("Join_Left_Back")
+--  backMotorRight = sim.getObjectHandle("Join_Right_Back")
+--  frontMotorLeft = sim.getObjectHandle("Join_Left_Front")
+--  frontMotorRight = sim.getObjectHandle("Join_Right_Front")
 
   rosInterfacePresent = simROS
 
@@ -226,6 +226,9 @@ function sysCall_init()
   if rosInterfacePresent then
     publisher1 = simROS.advertise('/simulationTime','std_msgs/Float32')
     publisher2 = simROS.advertise('/pose','geometry_msgs/Pose')
+
+    publisher_gyro = simROS.advertise('/gyro','std_msgs/Float32MultiArray')
+    publisher_acc  = simROS.advertise('/acc','std_msgs/Float32MultiArray')
 
     --subscriber1=simROS.subscribe('/cmd_u1','std_msgs/Float32','subscriber_cmd_u1_callback')
     --subscriber2=simROS.subscribe('/cmd_u2','std_msgs/Float32','subscriber_cmd_u2_callback')
@@ -237,18 +240,20 @@ function sysCall_init()
   end
 
   -- Get some handles (as usual !):
-  onboard_camera = sim.getObjectHandle('OnBoardCamera')
+--  onboard_camera = sim.getObjectHandle('OnBoardCamera')
 
   -- Enable an image publisher and subscriber:
-  pub = simROS.advertise('/image', 'sensor_msgs/Image')
-  simROS.publisherTreatUInt8ArrayAsString(pub) -- treat uint8 arrays as strings (much faster, tables/arrays are kind of slow in Lua)
+--  pub = simROS.advertise('/image', 'sensor_msgs/Image')
+--  simROS.publisherTreatUInt8ArrayAsString(pub) -- treat uint8 arrays as strings (much faster, tables/arrays are kind of slow in Lua)
 
   -- initialization for sensor processing
   -- initialize communication tube with accelerometers and gyroscopes
-  accelCommunicationTube=sim.tubeOpen(0,'accelerometerData'..sim.GetNameSuffix(nil),1) 
+  accelCommunicationTube=sim.tubeOpen(0, 'accelerometerData'..sim.GetNameSuffix(nil), 1)
   accel={0.0, 0.0, 0.0}
-  gyroCommunicationTube=sim.tubeOpen(0,'gyroData'..sim.GetNameSuffix(nil),1) -- put this in the initialization phase
+
+  gyroCommunicationTube=sim.tubeOpen(0, 'gyroData'..sim.GetNameSuffix(nil), 1) -- put this in the initialization phase
   gyro={0.0, 0.0, 0.0}
+
   lastRelativeOrientation={}
   lastOrientationTime={}
   propellersCnt={}
@@ -267,6 +272,12 @@ function sysCall_sensing()
     d['step'] = w*3
     d['data'] = data
     simROS.publish(pub,d)
+
+    gyro = getGyrometer()
+    simROS.publish(publisher_gyro, gyro)
+
+    acc = getAcceleration()
+    simROS.publish(publisher_acc, acc)
 end
  
 
