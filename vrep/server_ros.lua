@@ -127,11 +127,13 @@ end
 function getGyrometer()
   -- This function get the value of acceleration
   accurateGyrometer = 0.01 --To complette
-    tmpData = sim.tubeRead(gyroCommunicationTube)
-    if (tmpData) then
+
+  tmpData = sim.tubeRead(gyroCommunicationTube)
+
+  if (tmpData) then
     gyro = sim.unpackFloats(tmpData)
-    end
-    return {gyro_x = gyro[1] + accurateGyrometer * gaussian(0,1), gyro_y = gyro[2] + accurateGyrometer * gaussian(0,1), gyro_z = gyro[3] + accurateGyrometer * gaussian(0,1)}
+  end
+  return {gyro_x = gyro[1] + accurateGyrometer * gaussian(0,1), gyro_y = gyro[2] + accurateGyrometer * gaussian(0,1), gyro_z = gyro[3] + accurateGyrometer * gaussian(0,1)}
 end
 
 
