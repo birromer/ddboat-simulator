@@ -131,6 +131,7 @@ function sysCall_actuation()
       simROS.publish(publisher2, getPose(objectHandle))
 
       -- send a TF
+      simROS.sendTransform(getTransformStamped(objectHandle,objectName,referenceHandle,referenceName))
       -- To send several transforms at once, use simROS.sendTransforms instead
    end
 end
