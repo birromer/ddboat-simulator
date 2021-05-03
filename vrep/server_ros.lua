@@ -81,7 +81,7 @@ function deltaWheelAngularPosition(curPos,lastPos,wSpeed)
 end
 
 
-function getCompass(objectName,statemotor)
+function getCompass(objectName, statemotor)
   -- This function get the value of the compass 
   objectHandle = sim.getObjectHandle(objectName)
   relTo = -1
@@ -109,7 +109,10 @@ function getGPS(objectName)
   p = sim.getObjectPosition(objectHandle,relTo)
   ly = (p[2]/rho) + latRef
   lx = (p[1]/(rho*math.cos(ly))) + longRef
-  return {longitude = lx*180/math.pi + accurateGPS * gaussian(0,1), lattitude = ly*180/math.pi+ accurateGPS * gaussian(0,1)}
+  return {
+    lx*180/math.pi + accurateGPS * gaussian(0,1),
+    ly*180/math.pi+ accurateGPS * gaussian(0,1)
+  }
 end
 
 
@@ -118,9 +121,13 @@ function getAcceleration()
   accurateAccelerometer = 0.1 --To complette
   tmpData = sim.tubeRead(accelCommunicationTube)
     if (tmpData) then
-    accel=sim.unpackFloats(tmpData)
+    accel = sim.unpackFloats(tmpData)
     end
-    return {accel_x = accel[1] + accurateAccelerometer * gaussian(0,1), accel_y = accel[2] + accurateAccelerometer * gaussian(0,1), accel_z = accel[3] + accurateAccelerometer * gaussian(0,1)}
+    return {
+      accel[1] + accurateAccelerometer * gaussian(0,1),
+      accel[2] + accurateAccelerometer * gaussian(0,1),
+      accel[3] + accurateAccelerometer * gaussian(0,1)
+    }
 end
 
 
@@ -133,14 +140,19 @@ function getGyrometer()
   if (tmpData) then
     gyro = sim.unpackFloats(tmpData)
   end
-  return {gyro_x = gyro[1] + accurateGyrometer * gaussian(0,1), gyro_y = gyro[2] + accurateGyrometer * gaussian(0,1), gyro_z = gyro[3] + accurateGyrometer * gaussian(0,1)}
+
+  return {
+    gyro[1] + accurateGyrometer * gaussian(0,1),
+    gyro[2] + accurateGyrometer * gaussian(0,1),
+    gyro[3] + accurateGyrometer * gaussian(0,1)
+  }
 end
 
 
 function getEncoder()
   -- This function update encoders with relative orientation of the wheel (wrt joint axis)
     for ip=1,#propellers do
-      handle=sim.getObjectHandle(objectName)
+      handle = sim.getObjectHandle(objectName)
 
       relativeOrientation = getWheelAngularPosition(handle)
       currentOrientationTime = sim.getSimulationTime()
@@ -180,10 +192,10 @@ end
 
 function getPose(objectName)
   -- This function get the object pose at ROS format geometry_msgs/Pose
-  objectHandle=sim.getObjectHandle(objectName)
+  objectHandle = sim.getObjectHandle(objectName)
   relTo = -1
-  p=sim.getObjectPosition(objectHandle,relTo)
-  o=sim.getObjectQuaternion(objectHandle,relTo)
+  p = sim.getObjectPosition(objectHandle,relTo)
+  o = sim.getObjectQuaternion(objectHandle,relTo)
 
   return {
     position={x=p[1],y=p[2],z=p[3]},
@@ -225,7 +237,7 @@ end
 function sysCall_init()
   -- The child script initialization
  -- objectName = "Corps_boat"
-  objectHandle =sim.getObjectAssociatedWithScript(sim.handle_self)
+  objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
 
   -- get left and right motors handles
   MotorLeft = sim.getObjectHandle("motor_left")
@@ -265,10 +277,11 @@ function sysCall_init()
 
   -- initialization for sensor processing
   -- initialize communication tube with accelerometers and gyroscopes
-  accelCommunicationTube = sim.tubeOpen(0, 'accelerometerData'..sim.GetNameSuffix(nil), 1)
+  accelCommunicationTube = sim.tubeOpen(0, 'accelerometerData#', 1)
+
   accel={0.0, 0.0, 0.0}
 
-  gyroCommunicationTube = sim.tubeOpen(0, 'gyroData'..sim.GetNameSuffix(nil), 1) -- put this in the initialization phase
+  gyroCommunicationTube = sim.tubeOpen(0, 'gyroData#', 1) -- put this in the initialization phase
   gyro={0.0, 0.0, 0.0}
 
   h=simGetObjectAssociatedWithScript(sim_handle_self)
@@ -281,31 +294,41 @@ end
 
 function sysCall_sensing()
     -- Publish the image of the vision sensor:
-    local data, w, h = sim.getVisionSensorCharImage(onboard_camera)
-    d = {}
-    d['header'] = {seq=0,stamp=simROS.getTime(), frame_id="a"}
-    d['height'] = h
-    d['width'] = w
-    d['encoding'] = 'rgb8'
-    d['is_bigendian'] = 1
-    d['step'] = w*3
-    d['data'] = data
-    simROS.publish(pub,d)
+--    local data, w, h = sim.getVisionSensorCharImage(onboard_camera)
+--    d = {}
+--    d['header'] = {seq=0,stamp=simROS.getTime(), frame_id="a"}
+--    d['height'] = h
+--    d['width'] = w
+--    d['encoding'] = 'rgb8'
+--    d['is_bigendian'] = 1
+--    d['step'] = w*3
+--    d['data'] = data
+--    simROS.publish(pub,d)
 
-    gyro = getGyrometer()
-    simROS.publish(publisher_gyro, gyro)
+    gyro_data = getGyrometer()
+    local gyro_msg = {}
+    gyro_msg.data = gyro_data
+    simROS.publish(publisher_gyro, gyro_msg)
 
     acc = getAcceleration()
-    simROS.publish(publisher_acc, acc)
+    local acc_msg = {}
+    acc_msg.data = acc
+    simROS.publish(publisher_acc, acc_msg)
 
-    encoder = getEncoder()
-    simROS.publish(publisher_enc, encoder)
+--    encoder = getEncoder()
+--    encoder_msg = {}
+--    encoder_msg.data = encoder
+--    simROS.publish(publisher_enc, encoder_msg)
 
-    gps = getGPS(objectName)
-    simROS.publish(publisher_gps, gps)
+    gps_data = getGPS("GPS")
+    gps_msg = {}
+    gps_msg.data = gps_data
+    simROS.publish(publisher_gps, gps_msg)
 
-    compass = getCompass(objectName, statemotor)
-    simROS.publish(publisher_comp, compass)
+    compass_data = getCompass(sim.handle_self, statemotor)
+    compass_msg = {}
+    compass_msg.data = compass_data
+    simROS.publish(publisher_comp, compass_msg)
 end
  
 
@@ -314,12 +337,14 @@ function sysCall_actuation()
    if rosInterfacePresent then
       -- publish time and pose topics
       simROS.publish(publisher1, {data=sim.getSimulationTime()})
-      objectHandle =sim.getObjectAssociatedWithScript(sim.handle_self)
-      simROS.publish(publisher2, getPose(objectHandle))
-      simROS.publish(publisher3, getSpeed(objectHandle)
+
+      objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
+
+      simROS.publish(publisher2, getPose(sim.handle_self))
+      simROS.publish(publisher3, getSpeed(sim.handle_self))
 
       -- send a TF
-      simROS.sendTransform(getTransformStamped(objectHandle,objectName,referenceHandle,referenceName))
+      simROS.sendTransform(getTransformStamped(objectHandle, objectName, -1, 'odom'))
       -- To send several transforms at once, use simROS.sendTransforms instead
    end
 end
@@ -327,10 +352,6 @@ end
 function sysCall_cleanup()
     -- Following not really needed in a simulation script (i.e. automatically shut down at simulation end):
   if rosInterfacePresent then
-    simROS.shutdownPublisher(publisher1)
-    simROS.shutdownPublisher(publisher2)
-    simROS.shutdownPublisher(publisher3)
-
     --simROS.shutdownSubscriber(subscriber1)
     --simROS.shutdownSubscriber(subscriber2)
     simROS.shutdownSubscriber(subscriber3)
@@ -338,6 +359,7 @@ function sysCall_cleanup()
 
     simROS.shutdownPublisher(publisher1)
     simROS.shutdownPublisher(publisher2)
+    simROS.shutdownPublisher(publisher3)
     simROS.shutdownPublisher(publisher_acc)
     simROS.shutdownPublisher(publisher_enc)
     simROS.shutdownPublisher(publisher_gps)
