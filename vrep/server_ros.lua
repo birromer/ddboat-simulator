@@ -191,6 +191,18 @@ function getPose(objectName)
   }
 end
 
+function getSpeed(objectName)
+  -- This function get the object pose at ROS format geometry_msgs/Pose
+  objectHandle=sim.getObjectHandle(objectName)
+  relTo = -1
+  p, o =sim.getObjectVelocity(objectHandle)
+
+  return {
+    position={x=p[1],y=p[2],z=p[3]},
+    orientation={x=o[1],y=o[2],z=o[3],w=0}
+  }
+end
+
 function getTransformStamped(objHandle,name,relTo,relToName)
   -- This function retrieves the stamped transform for a specific object
   t=sim.getSystemTime()
@@ -226,8 +238,9 @@ function sysCall_init()
   if rosInterfacePresent then
     publisher1 = simROS.advertise('/simulationTime','std_msgs/Float32')
     publisher2 = simROS.advertise('/pose','geometry_msgs/Pose')
+    publisher3 = simROS.advertise('/speed','geometry_msgs/Pose')
 
---    publisher_gyro = simROS.advertise('/gyro','std_msgs/Float32MultiArray')
+    publisher_gyro = simROS.advertise('/gyro','std_msgs/Float32MultiArray')
     publisher_acc  = simROS.advertise('/acc','std_msgs/Float32MultiArray')
     publisher_enc  = simROS.advertise('/encoder','std_msgs/Float32MultiArray')
     publisher_gps  = simROS.advertise('/gps','std_msgs/Float32MultiArray')
@@ -279,8 +292,8 @@ function sysCall_sensing()
     d['data'] = data
     simROS.publish(pub,d)
 
---    gyro = getGyrometer()
---    simROS.publish(publisher_gyro, gyro)
+    gyro = getGyrometer()
+    simROS.publish(publisher_gyro, gyro)
 
     acc = getAcceleration()
     simROS.publish(publisher_acc, acc)
@@ -288,11 +301,11 @@ function sysCall_sensing()
     encoder = getEncoder()
     simROS.publish(publisher_enc, encoder)
 
---    gps = getGPS(objectName)
---    simROS.publish(publisher_gps, gps)
+    gps = getGPS(objectName)
+    simROS.publish(publisher_gps, gps)
 
---    compass = getCompass(objectName, statemotor)
---    simROS.publish(publisher_comp, compass)
+    compass = getCompass(objectName, statemotor)
+    simROS.publish(publisher_comp, compass)
 end
  
 
@@ -303,6 +316,7 @@ function sysCall_actuation()
       simROS.publish(publisher1, {data=sim.getSimulationTime()})
       objectHandle =sim.getObjectAssociatedWithScript(sim.handle_self)
       simROS.publish(publisher2, getPose(objectHandle))
+      simROS.publish(publisher3, getSpeed(objectHandle)
 
       -- send a TF
       simROS.sendTransform(getTransformStamped(objectHandle,objectName,referenceHandle,referenceName))
@@ -315,6 +329,7 @@ function sysCall_cleanup()
   if rosInterfacePresent then
     simROS.shutdownPublisher(publisher1)
     simROS.shutdownPublisher(publisher2)
+    simROS.shutdownPublisher(publisher3)
 
     --simROS.shutdownSubscriber(subscriber1)
     --simROS.shutdownSubscriber(subscriber2)
