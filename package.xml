@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ddboat-sim</name>
+  <name>ddboat_sim</name>
   <version>0.0.1</version>
-  <description>The ddboat-sim package</description>
+  <description>The ddboat_sim package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

@@ -1,0 +1,8 @@
+<launch>
+
+  <group ns="main">
+    <node name="boat_simulator" pkg="ddboat_sim" type="robot" output="screen"/>
+    <node name="controller" pkg="ddboat_sim" type="controller" output="screen"/>
+  </group>
+
+</launch>
