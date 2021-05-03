@@ -86,8 +86,8 @@ int main(int argc, char **argv) {
       u1 = 0;
       u2 = 0;
     } else {
-      u1 = 1;
-      u2 = 1;
+      u1 = 100;
+      u2 = 100;
     }
 
     i++;
