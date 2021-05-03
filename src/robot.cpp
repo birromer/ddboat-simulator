@@ -104,16 +104,16 @@ int main(int argc, char **argv) {
   ros::Publisher state_pub = n.advertise<ddboat_sim::State>("state_boat", 1000);
 
   while (ros::ok()) {
-    std::cout << "inicio do loop" << std::endl;
+    std::cout << "beggining of the loop" << std::endl;
     u1 = cmd_r;
     u2 = cmd_l;
 
     if (DATA_FROM_SIM == false) { // evolve model
-      std::cout << "entrei no caso com simulacao" << std::endl;
+      std::cout << "simulation case" << std::endl;
       integration_euler(x1, x2, x3, x4, u1, u2, dt);
 
     } else { // get simulation data
-      std::cout << "entrei no caso sem simulacao" << std::endl;
+      std::cout << "not the simulation case" << std::endl;
 
       double vit = sqrt(pow(x1 - prev_x1, 2) + pow(x2-prev_x2,2));
 
