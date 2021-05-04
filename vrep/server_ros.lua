@@ -83,7 +83,7 @@ end
 
 function getCompass(objectName, statemotor)
   -- This function get the value of the compass 
-  objectHandle = sim.getObjectHandle(objectName)
+  objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
   relTo = -1
   o = sim.getObjectOrientation(objectHandle, relTo)
   if statemotor then -- if motor is ON 
@@ -190,9 +190,18 @@ function subscriber_cmd_ur_callback(msg)
   sim.addStatusbarMessage('cmd_ur subscriber receiver : wheels speed ='..spdMotor1)
 end
 
+function subscriber_buoyancy_callback(msg)
+  objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
+  forcex = msg["force"]
+  torque2 = msg["torque"]
+
+  sim.addForceAndTorque(objectHandle,{forcex.x,forcex.y,forcex.z}, {torque2.x,torque2.y,torque2.z})
+end
+
 function getPose(objectName)
   -- This function get the object pose at ROS format geometry_msgs/Pose
-  objectHandle = sim.getObjectHandle(objectName)
+  objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
+  --objectHandle = sim.getObjectHandle(sim.handle_self)
   relTo = -1
   p = sim.getObjectPosition(objectHandle,relTo)
   o = sim.getObjectQuaternion(objectHandle,relTo)
@@ -205,7 +214,7 @@ end
 
 function getSpeed(objectName)
   -- This function get the object pose at ROS format geometry_msgs/Pose
-  objectHandle=sim.getObjectHandle(objectName)
+  objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
   relTo = -1
   p, o =sim.getObjectVelocity(objectHandle)
 
@@ -265,6 +274,7 @@ function sysCall_init()
 
     subscriber3 = simROS.subscribe('/main/z_u1','std_msgs/Float32','subscriber_cmd_ul_callback')
     subscriber4 = simROS.subscribe('/main/z_u2','std_msgs/Float32','subscriber_cmd_ur_callback')
+    subscriber5 = simROS.subscribe('/Torseur','geometry_msgs/Wrench','subscriber_buoyancy_callback')
   end
 
   -- Get some handles (as usual !):
@@ -356,6 +366,7 @@ function sysCall_cleanup()
     --simROS.shutdownSubscriber(subscriber2)
     simROS.shutdownSubscriber(subscriber3)
     simROS.shutdownSubscriber(subscriber4)
+    simROS.shutdownSubscriber(subscriber5)
 
     simROS.shutdownPublisher(publisher1)
     simROS.shutdownPublisher(publisher2)
