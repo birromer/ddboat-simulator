@@ -176,26 +176,25 @@ function getEncoder()
 end
 
 
-function subscriber_cmd_ul_callback(msg)
+function subscriber_z_u1_callback(msg)
   spdMotor1 = msg["data"]
   sim.addForceAndTorque(MotorLeft,{0,spdMotor1,0})
 
-  sim.addStatusbarMessage('cmd_ul subscriber receiver : wheels speed ='..spdMotor1)
+  sim.addStatusbarMessage('z_u1 subscriber receiver : wheels speed ='..spdMotor1)
 end
 
-function subscriber_cmd_ur_callback(msg)
+function subscriber_z_u2_callback(msg)
   spdMotor1 = msg["data"]
   sim.addForceAndTorque(MotorRight,{0,spdMotor1,0})
 
-  sim.addStatusbarMessage('cmd_ur subscriber receiver : wheels speed ='..spdMotor1)
+  sim.addStatusbarMessage('z_u2 subscriber receiver : wheels speed ='..spdMotor1)
 end
 
-function subscriber_buoyancy_callback(msg)
+function subscriber_buoyancy_callback(msg) --does'nt work
   objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
   forcex = msg["force"]
   torque2 = msg["torque"]
 
-  sim.addForceAndTorque(objectHandle,{forcex.x,forcex.y,forcex.z}, {torque2.x,torque2.y,torque2.z})
 end
 
 function getPose(objectName)
@@ -272,8 +271,8 @@ function sysCall_init()
     --subscriber3=simROS.subscribe('/cmd_u3','std_msgs/Float32','subscriber_cmd_u3_callback')
     --subscriber4=simROS.subscribe('/cmd_u4','std_msgs/Float32','subscriber_cmd_u4_callback')
 
-    subscriber3 = simROS.subscribe('/main/z_u1','std_msgs/Float32','subscriber_cmd_ul_callback')
-    subscriber4 = simROS.subscribe('/main/z_u2','std_msgs/Float32','subscriber_cmd_ur_callback')
+    subscriber3 = simROS.subscribe('/main/z_u1','std_msgs/Float32','subscriber_z_u1_callback')
+    subscriber4 = simROS.subscribe('/main/z_u2','std_msgs/Float32','subscriber_z_u2_callback')
     subscriber5 = simROS.subscribe('/Torseur','geometry_msgs/Wrench','subscriber_buoyancy_callback')
   end
 
