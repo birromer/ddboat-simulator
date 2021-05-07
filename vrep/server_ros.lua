@@ -1,47 +1,6 @@
--- u1 : moteur avant gauche Join_Left_Front frontMotorLeft
--- u2 : moteur avant droit Join_Right_Front frontMotorRight
--- u3 : moteur arriere gauche Join_Left_Back backMotorLeft
--- u4 : moteur arriere droit Join_Right_Back backMotorRight
-
--- function subscriber_cmd_u1_callback(msg)
---     spdMotor = msg["data"]
---     sim.setJointTargetVelocity(frontMotorLeft, spdMotor)
---   sim.addStatusbarMessage('cmd_u1 subscriber receiver : wheels speed ='..spdMotor)
--- end
-
--- function subscriber_cmd_u2_callback(msg)
---   spdMotor = msg["data"]
---   sim.setJointTargetVelocity(frontMotorRight, spdMotor)
---   sim.addStatusbarMessage('cmd_u1 subscriber receiver : wheels speed ='..spdMotor)
--- end
-
--- function subscriber_cmd_u3_callback(msg)
---   spdMotor = msg["data"]
---   sim.setJointTargetVelocity(backMotorLeft, spdMotor)
---   sim.addStatusbarMessage('cmd_u1 subscriber receiver : wheels speed ='..spdMotor)
--- end
-
--- function subscriber_cmd_u4_callback(msg)
---   spdMotor = msg["data"]
---   sim.setJointTargetVelocity(backMotorRight, spdMotor)
---   sim.addStatusbarMessage('cmd_u1 subscriber receiver : wheels speed ='..spdMotor)
--- end
+--z_u1 et z_u2 are the topics to control for motors left/right
 
 require ("math")
-socket=require("socket")
-
-
--- Use sleeping function of socket library
-function sleep(sec)
-    socket.select(nil,nil,sec)
-end 
-
-
--- Get cuurent time (in sec) 
-function gettime()
-   return socket.gettime()
-end
-
 
 function gaussian (mean, variance)
     return  math.sqrt(-2 * variance * math.log(math.random())) *
@@ -100,10 +59,10 @@ function getGPS(objectName)
   -- This function get the value of the position of the boat
   -- and estimate the longitude and the lattitude of the boat
   -- the reference is the "ponton of Guerledan"
-  longRef = -3.01473333*math.pi/180  -- To complete
-  latRef = 48.19906500*math.pi/180  -- To complete
-  rho =  6370000 -- To complete
-  accurateGPS= 0.00001 -- To complete in degre
+  longRef = -3.01473333*math.pi/180  
+  latRef = 48.19906500*math.pi/180 
+  rho =  6370000 
+  accurateGPS= 0.00001 
   relTo = -1
   objectHandle = sim.getObjectHandle(objectName)
   p = sim.getObjectPosition(objectHandle,relTo)
@@ -118,7 +77,7 @@ end
 
 function getAcceleration()
   -- This function get the value of acceleration
-  accurateAccelerometer = 0.1 --To complette
+  accurateAccelerometer = 0.1
   tmpData = sim.tubeRead(accelCommunicationTube)
     if (tmpData) then
     accel = sim.unpackFloats(tmpData)
@@ -133,7 +92,7 @@ end
 
 function getGyrometer()
   -- This function get the value of acceleration
-  accurateGyrometer = 0.01 --To complette
+  accurateGyrometer = 0.01
 
   tmpData = sim.tubeRead(gyroCommunicationTube)
 
@@ -176,26 +135,27 @@ function getEncoder()
 end
 
 
-function subscriber_cmd_ul_callback(msg)
+function subscriber_z_u1_callback(msg)
+  -- gets the values for motor left
   spdMotor1 = msg["data"]
   sim.addForceAndTorque(MotorLeft,{0,spdMotor1,0})
 
-  sim.addStatusbarMessage('cmd_ul subscriber receiver : wheels speed ='..spdMotor1)
+  sim.addStatusbarMessage('z_u1 subscriber receiver : wheels speed ='..spdMotor1)
 end
 
-function subscriber_cmd_ur_callback(msg)
+function subscriber_z_u2_callback(msg)
+  -- gets the values for motor right
   spdMotor1 = msg["data"]
   sim.addForceAndTorque(MotorRight,{0,spdMotor1,0})
 
-  sim.addStatusbarMessage('cmd_ur subscriber receiver : wheels speed ='..spdMotor1)
+  sim.addStatusbarMessage('z_u2 subscriber receiver : wheels speed ='..spdMotor1)
 end
 
-function subscriber_buoyancy_callback(msg)
+function subscriber_buoyancy_callback(msg) --does'nt work
   objectHandle = sim.getObjectAssociatedWithScript(sim.handle_self)
   forcex = msg["force"]
   torque2 = msg["torque"]
 
-  sim.addForceAndTorque(objectHandle,{forcex.x,forcex.y,forcex.z}, {torque2.x,torque2.y,torque2.z})
 end
 
 function getPose(objectName)
@@ -267,13 +227,8 @@ function sysCall_init()
     publisher_gps  = simROS.advertise('/gps','std_msgs/Float32MultiArray')
     publisher_comp = simROS.advertise('/compass','std_msgs/Float32')
 
-    --subscriber1=simROS.subscribe('/cmd_u1','std_msgs/Float32','subscriber_cmd_u1_callback')
-    --subscriber2=simROS.subscribe('/cmd_u2','std_msgs/Float32','subscriber_cmd_u2_callback')
-    --subscriber3=simROS.subscribe('/cmd_u3','std_msgs/Float32','subscriber_cmd_u3_callback')
-    --subscriber4=simROS.subscribe('/cmd_u4','std_msgs/Float32','subscriber_cmd_u4_callback')
-
-    subscriber3 = simROS.subscribe('/main/z_u1','std_msgs/Float32','subscriber_cmd_ul_callback')
-    subscriber4 = simROS.subscribe('/main/z_u2','std_msgs/Float32','subscriber_cmd_ur_callback')
+    subscriber3 = simROS.subscribe('/main/z_u1','std_msgs/Float32','subscriber_z_u1_callback')
+    subscriber4 = simROS.subscribe('/main/z_u2','std_msgs/Float32','subscriber_z_u2_callback')
     subscriber5 = simROS.subscribe('/Torseur','geometry_msgs/Wrench','subscriber_buoyancy_callback')
   end
 
